@@ -1,6 +1,9 @@
 
 import os
 
+
+ENVIRONMENT = os.environ.get('ENVIRONMENT', default='production')
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -14,7 +17,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(os.environ.get('DEBUG', default=0))
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['.herokuapp.com', 'localhost', '127.0.0.1','0.0.0.0']
 
 
 # Application definition
@@ -28,7 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'pages.apps.PagesConfig',
     'crispy_forms',
-
+    'whitenoise.runserver_nostatic',
     #ALL AUTH#
     'django.contrib.sites',
     'allauth',
@@ -63,9 +66,11 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER ='richard.black183@gmail.com' #'your_account@gmail.com'
-EMAIL_HOST_PASSWORD = 'Dgpwmjdg11'#'your accounts password'
+EMAIL_HOST_USER ='' #'your_account@gmail.com'
+EMAIL_HOST_PASSWORD = ''#'your accounts password'
 DEFAULT_FROM_EMAIL = 'admin@app.com'
+
+
 #FORM BOOTSTRAP 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
@@ -77,6 +82,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.cache.UpdateCacheMiddleware',
 ]
 
 
@@ -115,6 +121,19 @@ DATABASES = {
 'PORT': 5432
 }
 }
+
+# production
+if ENVIRONMENT == 'production':
+    SECURE_BROWSER_XSS_FILTER = True
+    X_FRAME_OPTIONS = 'DENY'
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 3600
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SESSION_COOKIE_SECURE = True 
+    CSRF_COOKIE_SECURE = True 
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Password validation
@@ -165,3 +184,8 @@ STATICFILES_FINDERS = [
 
 MEDIA_URL = '/media/' 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media') 
+
+#DEPLOY in heroke conf
+import dj_database_url
+db_from_env = dj_database_url.config(conn_max_age=500)
+DATABASES['default'].update(db_from_env)
